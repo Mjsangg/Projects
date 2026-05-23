@@ -1,0 +1,689 @@
+/* ============================================================
+   AURA — Glassmorphism Login
+   ============================================================
+   Fonts   : Syne (display) · DM Sans (body)
+   Palette : deep cosmic dark + cyan/violet neon accents
+   Author  : Claude (Anthropic)
+   ============================================================ */
+
+/* ── 1. Design Tokens ────────────────────────────────────────── */
+:root {
+  /* Core palette */
+  --bg-deep:        #050811;
+  --bg-surface:     rgba(255, 255, 255, 0.055);
+  --bg-surface-hov: rgba(255, 255, 255, 0.08);
+
+  /* Neon accents */
+  --accent-cyan:    #06b6d4;
+  --accent-violet:  #7c3aed;
+  --accent-mid:     #3b82f6;
+
+  /* Text */
+  --text-primary:   #f0f4ff;
+  --text-secondary: rgba(200, 210, 240, 0.6);
+  --text-muted:     rgba(200, 210, 240, 0.35);
+
+  /* Glass card */
+  --card-bg:        rgba(255, 255, 255, 0.06);
+  --card-border:    rgba(255, 255, 255, 0.12);
+  --card-shadow:    0 32px 80px rgba(0, 0, 0, 0.55),
+                    0 0 0 1px rgba(255,255,255,0.06);
+
+  /* Input */
+  --input-bg:       rgba(255, 255, 255, 0.055);
+  --input-border:   rgba(255, 255, 255, 0.12);
+  --input-focus-border: var(--accent-cyan);
+  --input-focus-glow:   0 0 0 3px rgba(6, 182, 212, 0.18),
+                        0 0 20px rgba(6, 182, 212, 0.08);
+
+  /* Geometry */
+  --radius-card:    24px;
+  --radius-input:   12px;
+  --radius-btn:     12px;
+
+  /* Motion */
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── 2. Reset & Base ─────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--bg-deep);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 400;
+  color: var(--text-primary);
+  overflow-x: hidden;
+  position: relative;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── 3. Animated Background Canvas ──────────────────────────── */
+.bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Gradient blobs */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.45;
+  will-change: transform;
+}
+
+.blob-1 {
+  width: 700px;
+  height: 700px;
+  top: -200px;
+  left: -180px;
+  background: radial-gradient(circle, #4f46e5 0%, transparent 70%);
+  animation: floatBlob1 18s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 600px;
+  height: 600px;
+  bottom: -150px;
+  right: -100px;
+  background: radial-gradient(circle, #0891b2 0%, transparent 70%);
+  animation: floatBlob2 22s ease-in-out infinite;
+}
+
+.blob-3 {
+  width: 450px;
+  height: 450px;
+  top: 40%;
+  left: 55%;
+  background: radial-gradient(circle, #7c3aed 0%, transparent 70%);
+  animation: floatBlob3 15s ease-in-out infinite;
+  opacity: 0.3;
+}
+
+.blob-4 {
+  width: 300px;
+  height: 300px;
+  top: 15%;
+  right: 20%;
+  background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+  animation: floatBlob4 12s ease-in-out infinite;
+  opacity: 0.25;
+  filter: blur(60px);
+}
+
+@keyframes floatBlob1 {
+  0%, 100% { transform: translate(0, 0) scale(1);     }
+  33%       { transform: translate(60px, 80px) scale(1.08); }
+  66%       { transform: translate(-40px, 50px) scale(0.95); }
+}
+
+@keyframes floatBlob2 {
+  0%, 100% { transform: translate(0, 0) scale(1);       }
+  40%       { transform: translate(-70px, -60px) scale(1.1); }
+  70%       { transform: translate(50px, -30px) scale(0.92); }
+}
+
+@keyframes floatBlob3 {
+  0%, 100% { transform: translate(0, 0);        }
+  50%       { transform: translate(-80px, 60px); }
+}
+
+@keyframes floatBlob4 {
+  0%, 100% { transform: translate(0, 0) scale(1);   }
+  50%       { transform: translate(40px, 70px) scale(1.15); }
+}
+
+/* Floating rings */
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  animation: expandRing 8s ease-out infinite;
+  opacity: 0;
+}
+
+.ring-1 { width: 300px; height: 300px; top: 20%; left: 10%;  animation-delay: 0s;  }
+.ring-2 { width: 200px; height: 200px; bottom: 25%; right: 15%; animation-delay: 3s;  }
+.ring-3 { width: 150px; height: 150px; top: 60%; left: 60%; animation-delay: 5.5s; }
+
+@keyframes expandRing {
+  0%   { opacity: 0;    transform: scale(0.6); }
+  20%  { opacity: 0.6; }
+  100% { opacity: 0;    transform: scale(1.8); }
+}
+
+/* Subtle grid overlay */
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* ── 4. Stage / Layout ───────────────────────────────────────── */
+.stage {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+/* ── 5. Glass Card ───────────────────────────────────────────── */
+.glass-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 48px 40px 40px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--card-shadow);
+
+  /* The core glassmorphism effect */
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+
+  /* Entrance animation */
+  animation: cardIn 0.7s var(--ease-out-expo) both;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Light reflection sheen on the top edge */
+.card-sheen {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-card);
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.10) 0%,
+    rgba(255,255,255,0.03) 40%,
+    transparent 60%
+  );
+  z-index: 0;
+}
+
+/* All direct children above the sheen */
+.glass-card > *:not(.card-sheen) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── 6. Card Header ──────────────────────────────────────────── */
+.card-header {
+  text-align: center;
+  margin-bottom: 36px;
+  animation: fadeUp 0.6s var(--ease-out-expo) 0.15s both;
+}
+
+.logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  margin-bottom: 16px;
+  box-shadow: 0 0 24px rgba(6,182,212,0.15), inset 0 1px 0 rgba(255,255,255,0.12);
+  transition: box-shadow 0.3s ease, transform 0.3s var(--ease-spring);
+}
+
+.logo-mark:hover {
+  transform: scale(1.06) rotate(-3deg);
+  box-shadow: 0 0 36px rgba(6,182,212,0.28), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.brand-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #e0f2fe 0%, #a5f3fc 40%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.brand-tagline {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+/* ── 7. Login Form ───────────────────────────────────────────── */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── 8. Field Groups & Inputs ────────────────────────────────── */
+.field-group {
+  animation: fadeUp 0.6s var(--ease-out-expo) both;
+}
+.field-group:nth-child(1) { animation-delay: 0.2s; }
+.field-group:nth-child(2) { animation-delay: 0.28s; }
+
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Leading icon */
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  transition: color 0.25s ease;
+  z-index: 2;
+}
+
+/* Floating label */
+.float-label {
+  position: absolute;
+  left: 42px;   /* aligned after icon */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: all 0.22s var(--ease-out-expo);
+  transform-origin: left center;
+  white-space: nowrap;
+}
+
+/* Input base */
+.glass-input {
+  width: 100%;
+  height: 52px;
+  padding: 0 48px 0 42px; /* space for icon left, toggle right */
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-input);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.925rem;
+  font-weight: 400;
+  outline: none;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  /* Remove default autofill styles */
+  -webkit-text-fill-color: var(--text-primary);
+  caret-color: var(--accent-cyan);
+}
+
+.glass-input::placeholder {
+  color: transparent; /* placeholder hidden; float label handles it */
+}
+
+/* Float label UP when input has content or is focused */
+.glass-input:focus ~ .float-label,
+.glass-input:not(:placeholder-shown) ~ .float-label {
+  top: -10px;
+  transform: translateY(0) scale(0.78);
+  color: var(--accent-cyan);
+  background: transparent;
+  left: 14px;
+}
+
+/* Focus state */
+.glass-input:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-glow);
+  background: rgba(255,255,255,0.08);
+}
+
+/* Icon colour on focus */
+.glass-input:focus ~ .float-label + .input-icon,
+.input-wrap:focus-within .input-icon {
+  color: var(--accent-cyan);
+}
+
+/* Fix icon colour with JS-based approach */
+.input-wrap:has(.glass-input:focus) .input-icon {
+  color: var(--accent-cyan);
+}
+
+/* Password toggle button */
+.toggle-pw {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.2s ease, background 0.2s ease;
+  z-index: 2;
+}
+
+.toggle-pw:hover {
+  color: var(--accent-cyan);
+  background: rgba(6,182,212,0.1);
+}
+
+/* ── 9. Form Meta (remember + forgot) ───────────────────────── */
+.form-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: fadeUp 0.6s var(--ease-out-expo) 0.35s both;
+}
+
+/* Custom checkbox */
+.remember-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-check {
+  /* visually hidden but accessible */
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.check-box {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--input-border);
+  border-radius: 5px;
+  background: var(--input-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s var(--ease-spring);
+}
+
+.check-box::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: 2px solid white;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) scale(0) translateY(-1px);
+  transition: transform 0.2s var(--ease-spring);
+}
+
+.custom-check:checked ~ .check-box {
+  background: linear-gradient(135deg, var(--accent-violet), var(--accent-cyan));
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(6,182,212,0.4);
+}
+
+.custom-check:checked ~ .check-box::after {
+  transform: rotate(45deg) scale(1) translateY(-1px);
+}
+
+.check-text {
+  font-size: 0.825rem;
+  color: var(--text-secondary);
+}
+
+.forgot-link {
+  font-size: 0.825rem;
+  color: var(--accent-cyan);
+  opacity: 0.8;
+  transition: opacity 0.2s ease, text-shadow 0.2s ease;
+}
+
+.forgot-link:hover {
+  opacity: 1;
+  text-shadow: 0 0 12px rgba(6,182,212,0.5);
+}
+
+/* ── 10. Login Button ────────────────────────────────────────── */
+.btn-login {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 52px;
+  border: none;
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #fff;
+  overflow: hidden;
+  transition:
+    transform 0.2s var(--ease-spring),
+    box-shadow 0.3s ease;
+
+  /* Gradient background */
+  background: linear-gradient(135deg, var(--accent-violet) 0%, var(--accent-mid) 50%, var(--accent-cyan) 100%);
+  background-size: 200% 200%;
+  animation: fadeUp 0.6s var(--ease-out-expo) 0.42s both, gradientShift 4s ease infinite;
+
+  box-shadow:
+    0 4px 20px rgba(124, 58, 237, 0.4),
+    0 1px 0 rgba(255,255,255,0.12) inset;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%;   }
+  50%       { background-position: 100% 50%; }
+}
+
+.btn-login:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    0 8px 30px rgba(6, 182, 212, 0.45),
+    0 1px 0 rgba(255,255,255,0.15) inset;
+}
+
+.btn-login:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Arrow slides on hover */
+.btn-arrow {
+  font-size: 1.1rem;
+  transform: translateX(0);
+  transition: transform 0.25s var(--ease-spring);
+}
+
+.btn-login:hover .btn-arrow {
+  transform: translateX(4px);
+}
+
+/* Shimmer sweep */
+.btn-shimmer {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.18) 50%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+  transition: left 0s;
+}
+
+.btn-login:hover .btn-shimmer {
+  left: 160%;
+  transition: left 0.6s ease;
+}
+
+/* ── 11. Card Footer ─────────────────────────────────────────── */
+.card-footer {
+  margin-top: 28px;
+  text-align: center;
+  animation: fadeUp 0.6s var(--ease-out-expo) 0.5s both;
+}
+
+.signup-prompt {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.signup-link {
+  color: var(--accent-cyan);
+  font-weight: 500;
+  margin-left: 4px;
+  position: relative;
+  transition: text-shadow 0.2s ease;
+}
+
+.signup-link::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--accent-cyan);
+  transition: width 0.25s ease;
+}
+
+.signup-link:hover {
+  text-shadow: 0 0 10px rgba(6,182,212,0.5);
+}
+
+.signup-link:hover::after {
+  width: 100%;
+}
+
+/* ── 12. Shared Animations ───────────────────────────────────── */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── 13. Responsive ──────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .glass-card {
+    padding: 36px 24px 32px;
+    border-radius: 20px;
+  }
+
+  .brand-name {
+    font-size: 1.75rem;
+  }
+
+  .glass-input {
+    height: 48px;
+    font-size: 0.9rem;
+  }
+
+  .btn-login {
+    height: 48px;
+  }
+
+  .form-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .glass-card {
+    padding: 28px 18px 24px;
+  }
+}
+
+/* ── 14. Accessibility ───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Visible focus ring for keyboard nav */
+.glass-input:focus-visible,
+.btn-login:focus-visible,
+.toggle-pw:focus-visible,
+.forgot-link:focus-visible,
+.signup-link:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 3px;
+}
+
+/* ── 15. Autofill Override ───────────────────────────────────── */
+.glass-input:-webkit-autofill,
+.glass-input:-webkit-autofill:hover,
+.glass-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0 1000px rgba(15, 20, 40, 0.9) inset;
+  transition: background-color 9999s ease-in-out 0s;
+  caret-color: var(--accent-cyan);
+}
